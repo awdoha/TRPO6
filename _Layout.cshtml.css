@@ -1,0 +1,79 @@
+/* Please see documentation at https://learn.microsoft.com/aspnet/core/client-side/bundling-and-minification
+for details on configuring this project to bundle and minify static web assets. */
+
+/* Изолированные стили макета: при сборке файл превращается в Lab6.styles.css, который подключён в _Layout.cshtml (<link href="~/Lab6.styles.css">). Действуют на все страницы. */
+
+/* Логотип «Notes» в навигации (a.navbar-brand в _Layout.cshtml): разрешаем перенос текста, центр, разрыв длинных слов. */
+a.navbar-brand {
+  /* Разрешить перенос строки внутри ссылки. */
+  white-space: normal;
+  /* Выравнивание по центру. */
+  text-align: center;
+  /* Ломать слово в любом месте, если не помещается. */
+  word-break: break-all;
+}
+
+/* Цвет всех ссылок на сайте (например, «На главную», названия категорий в Note/Details.cshtml). */
+a {
+  /* Синий цвет ссылок. */
+  color: #0077cc;
+}
+
+/* Кнопки btn-primary («Применить», «Найти», «Сохранить изменения» и др.): белый текст, синий фон и рамка. */
+.btn-primary {
+  /* Белый цвет текста. */
+  color: #fff;
+  /* Синий фон. */
+  background-color: #1b6ec2;
+  /* Цвет рамки. */
+  border-color: #1861ac;
+}
+
+/* Активный пункт навигации-«таблеток» (nav-pills). В проекте таких пунктов нет: правило осталось от шаблона. */
+.nav-pills .nav-link.active, .nav-pills .show > .nav-link {
+  /* Белый текст. */
+  color: #fff;
+  /* Синий фон. */
+  background-color: #1b6ec2;
+  /* Цвет рамки. */
+  border-color: #1861ac;
+}
+
+/* Верхняя граница у элементов с классом border-top (подвал <footer class="border-top">). */
+.border-top {
+  /* Тонкая серая линия сверху. */
+  border-top: 1px solid #e5e5e5;
+}
+/* Нижняя граница у элементов с классом border-bottom (панель навигации <nav class="... border-bottom">). */
+.border-bottom {
+  /* Тонкая серая линия снизу. */
+  border-bottom: 1px solid #e5e5e5;
+}
+
+/* Лёгкая тень навигационной панели (класс box-shadow в <nav> _Layout.cshtml). */
+.box-shadow {
+  /* Смещение по вертикали, размытие и прозрачный чёрный цвет. */
+  box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05);
+}
+
+/* Кнопка принятия политики cookie (в проекте не используется, осталась от шаблона). */
+button.accept-policy {
+  /* Размер шрифта. */
+  font-size: 1rem;
+  /* Высота строки наследуется. */
+  line-height: inherit;
+}
+
+/* Подвал сайта (<footer class="footer"> в _Layout.cshtml): прижат к низу страницы. */
+.footer {
+  /* Позиционирование относительно html (у html position: relative в site.css). */
+  position: absolute;
+  /* Прижать к нижней границе. */
+  bottom: 0;
+  /* На всю ширину. */
+  width: 100%;
+  /* Не переносить текст. */
+  white-space: nowrap;
+  /* Высота строки подвала 60px. */
+  line-height: 60px;
+}

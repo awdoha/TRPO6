@@ -1,0 +1,71 @@
+@* Страница просмотра заметки: /Note/Details/5, действие NoteController.cs:157. Кнопка «Просмотр» в All.cshtml и Filter.cshtml, ссылка из Category/Details.cshtml. *@
+@* @model Note: Model - одна заметка (с категориями), её передал View(note) в NoteController.cs:164. *@
+@model Note
+@* Блок кода Razor. *@
+@{
+    @* Заголовок вкладки: «Заметка: » + заголовок заметки (склейка строк в C#). *@
+    ViewData["Title"] = "Заметка: " + Model.Title;
+}
+
+@* Заголовок страницы. *@
+<h1>Заметка</h1>
+@* Ссылки: на главную (/) и в список (/Note/All, NoteController.cs:34). *@
+<p><a asp-controller="Home" asp-action="Index">&larr; На главную</a> | <a asp-action="All">К списку заметок</a></p>
+
+@* Список «термин - значение» (dl/dt/dd), Bootstrap-сетка row. *@
+<dl class="row">
+    @* Название поля Id. *@
+    <dt class="col-sm-2">Id</dt>
+    @* Значение: @Model.Id - Id заметки. *@
+    <dd class="col-sm-10">@Model.Id</dd>
+
+    @* Название поля «Заголовок». *@
+    <dt class="col-sm-2">Заголовок</dt>
+    @* Значение Title. *@
+    <dd class="col-sm-10">@Model.Title</dd>
+
+    @* Название поля «Описание». *@
+    <dt class="col-sm-2">Описание</dt>
+    @* Значение Description. *@
+    <dd class="col-sm-10">@Model.Description</dd>
+
+    @* Название поля «Дата». *@
+    <dt class="col-sm-2">Дата</dt>
+    @* Дата в формате дд.мм.гггг. *@
+    <dd class="col-sm-10">@Model.Date.ToString("dd.MM.yyyy")</dd>
+
+    @* Название поля «Категории». *@
+    <dt class="col-sm-2">Категории</dt>
+    @* Значение: список категорий (Model.Categories заполнен благодаря Include в EFNoteRepository.GetAllNotes). *@
+    <dd class="col-sm-10">
+        @* Если у заметки нет категорий... *@
+        @if (Model.Categories.Count == 0)
+        {
+            @* ...пишем «Без категорий». *@
+            <span class="text-muted">Без категорий</span>
+        }
+        else
+        {
+            @* Маркированный список категорий. *@
+            <ul class="mb-0">
+                @* Цикл по категориям заметки. *@
+                @foreach (var category in Model.Categories)
+                {
+                    @* Элемент списка. *@
+                    <li>
+                        @* asp-controller="Category" asp-action="Details" asp-route-id -> /Category/Details/3 (CategoryController.cs:116). Текст ссылки - название категории. *@
+                        <a asp-controller="Category" asp-action="Details" asp-route-id="@category.Id">@category.Title</a>
+                        @* Тире и описание категории. *@
+                        — @category.Description
+                    </li>
+                }
+            </ul>
+        }
+    </dd>
+</dl>
+
+@* Кнопка «Изменить»: asp-route-id -> /Note/Edit/5 (NoteController.cs:101). *@
+<a class="btn btn-warning" asp-action="Edit" asp-route-id="@Model.Id">Изменить</a>
+@* Кнопка «Удалить»: /Note/Remove/5 (NoteController.cs:146); onclick с confirm спрашивает подтверждение в браузере. *@
+<a class="btn btn-danger" asp-action="Remove" asp-route-id="@Model.Id"
+   onclick="return confirm('Удалить заметку «@Model.Title»?');">Удалить</a>

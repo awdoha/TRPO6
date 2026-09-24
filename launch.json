@@ -1,0 +1,35 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    // Конфигурации запуска VS Code (меню «Запуск» / F5): открывают терминал и выполняют команду dotnet run.
+    // Версия формата файла launch.json.
+    "version": "0.2.0",
+    // Список конфигураций запуска.
+    "configurations": [
+        {
+            // Название в выпадающем списке: вариант, когда VS Code открыт на корне КостинДА_6пр (рекомендуется).
+            "name": "Lab6 Run (workspace root)",
+            // Тип: запуск команды в терминале node-terminal.
+            "type": "node-terminal",
+            // Запрос: запустить.
+            "request": "launch",
+            // Команда: запуск проекта Lab6.csproj из папки Lab6 внутри открытой папки (${workspaceFolder} - открытая папка).
+            "command": "dotnet run --project \"${workspaceFolder}/Lab6/Lab6.csproj\"",
+            // Рабочая папка терминала - корень открытой папки.
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            // Название: вариант, когда VS Code открыт на самой папке Lab6 (csproj лежит в корне).
+            "name": "Lab6 Run (Lab6 folder)",
+            // Тип запуска.
+            "type": "node-terminal",
+            // Запрос: запустить.
+            "request": "launch",
+            // Команда: csproj лежит прямо в открытой папке.
+            "command": "dotnet run --project \"${workspaceFolder}/Lab6.csproj\"",
+            // Рабочая папка - открытая папка.
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}

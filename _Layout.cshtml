@@ -1,0 +1,91 @@
+@* Общий макет (шаблон) всех страниц. Подключается автоматически через Views/_ViewStart.cshtml (Layout = "_Layout"). Содержимое конкретной страницы вставляется в @RenderBody(). *@
+<!DOCTYPE html>
+@* Корневой элемент HTML; lang - язык документа. *@
+<html lang="en">
+<head>
+    @* Кодировка страницы UTF-8 (русский текст). *@
+    <meta charset="utf-8" />
+    @* Адаптивность: ширина страницы = ширине экрана устройства. *@
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    @* @ViewData["Title"] - заголовок, который задаёт каждое представление (ViewData["Title"] = ... в начале .cshtml); после него добавляется « - Notes (Lab6)». *@
+    <title>@ViewData["Title"] - Notes (Lab6)</title>
+    @* Пустая карта импортов JS (шаблонная строка ASP.NET Core; в проекте не используется). *@
+    <script type="importmap"></script>
+    @* Стили Bootstrap из wwwroot/lib (готовая библиотека). ~ = корень сайта. *@
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    @* Свои стили wwwroot/css/site.css. asp-append-version="true" - tag helper добавляет к адресу хэш файла (?v=...), чтобы браузер не держал устаревший кэш. *@
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    @* Изолированные стили представлений (генерируются из Views/Shared/_Layout.cshtml.css в файл Lab6.styles.css); тоже с хэшем версии. *@
+    <link rel="stylesheet" href="~/Lab6.styles.css" asp-append-version="true" />
+</head>
+<body>
+    @* Шапка сайта. *@
+    <header>
+        @* Навигационная панель Bootstrap (белая, с нижней границей). *@
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            @* Контейнер на всю ширину. *@
+            <div class="container-fluid">
+                @* Логотип «Notes»: tag helper asp-controller="Home" asp-action="Index" даёт href="/" (HomeController.cs:16); asp-area="" - области (Areas) не используются. *@
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Notes</a>
+                @* Кнопка-«бургер» для узких экранов: атрибуты data-bs-* - Bootstrap раскрывает/сворачивает меню (класс .navbar-collapse). *@
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    @* Иконка бургера. *@
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                @* Сворачиваемый блок меню. *@
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    @* Список пунктов меню. *@
+                    <ul class="navbar-nav flex-grow-1">
+                        @* Пункт «Главная». *@
+                        <li class="nav-item">
+                            @* -> "/" (HomeController.cs:16). *@
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Главная</a>
+                        </li>
+                        @* Пункт «Заметки». *@
+                        <li class="nav-item">
+                            @* -> /Note/All (NoteController.cs:34). *@
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Note" asp-action="All">Заметки</a>
+                        </li>
+                        @* Пункт «Категории». *@
+                        <li class="nav-item">
+                            @* -> /Category/All (CategoryController.cs:27). *@
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Category" asp-action="All">Категории</a>
+                        </li>
+                        @* Пункт «Фильтрация». *@
+                        <li class="nav-item">
+                            @* -> /Note/Filter (NoteController.cs:205). *@
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Note" asp-action="Filter">Фильтрация</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+    @* Контейнер основного содержимого. *@
+    <div class="container">
+        @* Основная область страницы (role - для доступности). *@
+        <main role="main" class="pb-3">
+            @* [MVC] RenderBody() - «дырка» макета: сюда вставляется HTML текущего представления (например, Views/Note/All.cshtml). *@
+            @RenderBody()
+        </main>
+    </div>
+
+    @* Подвал; класс .footer описан в _Layout.cshtml.css. *@
+    <footer class="border-top footer text-muted">
+        @* Контейнер подвала. *@
+        <div class="container">
+            @* Копирайт и ссылка «Privacy» -> /Home/Privacy (HomeController.cs:23). *@
+            &copy; 2026 - Lab6 - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+        </div>
+    </footer>
+    @* Библиотека jQuery (wwwroot/lib) - нужна Bootstrap и клиентской валидации. *@
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    @* Bootstrap JS (меню-бургер и др.). *@
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @* Свой скрипт wwwroot/js/site.js (сейчас пустой, только комментарии); asp-append-version - версия по хэшу. *@
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @* Необязательная секция Scripts: если страница объявила @section Scripts { ... } (у нас - Note/Filter.cshtml), её содержимое вставляется здесь; required: false - у остальных страниц секции нет и это не ошибка. *@
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

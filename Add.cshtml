@@ -1,0 +1,76 @@
+@* Форма добавления заметки: GET /Note/Add (NoteController.cs:50) показывает форму, отправка формы - POST /Note/Add (NoteController.cs:64). Открывается кнопкой «Добавить заметку» в All.cshtml. *@
+@* @model Note - строго типизированное представление: Model - объект Note; его создал new Note { Date = DateTime.Now } в NoteController.cs:55 (или obj, возвращённый при ошибке валидации, NoteController.cs:72/88). *@
+@model Note
+@* Блок кода Razor (выполняется на сервере). *@
+@{
+    @* Заголовок вкладки для _Layout.cshtml. *@
+    ViewData["Title"] = "Добавление заметки";
+    @* ViewBag.Categories положил контроллер (NoteController.cs:53): список категорий из БД для чекбоксов. "as List<Category> ?? []" - привести к списку, а если null - пустой список. *@
+    var categories = ViewBag.Categories as List<Category> ?? [];
+}
+
+@* Заголовок страницы. *@
+<h1>Добавление заметки</h1>
+@* Две ссылки: asp-controller/asp-action="Home/Index" -> "/" и asp-action="All" -> /Note/All (NoteController.cs:34). *@
+<p><a asp-controller="Home" asp-action="Index">&larr; На главную</a> | <a asp-action="All">К списку заметок</a></p>
+
+@* Сводка ошибок валидации: tag helper asp-validation-summary="All" выводит все сообщения ModelState (в т.ч. «Такая заметка уже существует» из NoteController.cs:84 и ошибки [Required]/[StringLength] из Models/Note.cs). *@
+<div asp-validation-summary="All" class="text-danger"></div>
+
+@* Форма. asp-action="Add" -> action="/Note/Add"; method="post" -> уходит на NoteController.cs:64 (Add POST). Tag helper формы автоматически добавляет скрытое поле с antiforgery-токеном - его проверяет [ValidateAntiForgeryToken] (NoteController.cs:61). *@
+<form asp-action="Add" method="post">
+    @* Блок поля «Заголовок». *@
+    <div class="mb-3">
+        @* asp-for="Title" - подпись строится из свойства Note.Title (имя "Title"). *@
+        <label class="form-label" asp-for="Title"></label>
+        @* asp-for="Title" - tag helper делает <input name="Title" id="Title" value="...">; при отправке значение попадёт в obj.Title (model binding). *@
+        <input class="form-control" asp-for="Title" />
+        @* asp-validation-for="Title" - сюда выводится ошибка валидации для Title (например, «Введите заголовок заметки» из [Required]). *@
+        <span class="text-danger" asp-validation-for="Title"></span>
+    </div>
+    @* Блок поля «Описание». *@
+    <div class="mb-3">
+        @* Подпись из свойства Description. *@
+        <label class="form-label" asp-for="Description"></label>
+        @* Многострочное поле; значение уйдёт в obj.Description. *@
+        <textarea class="form-control" asp-for="Description" rows="4"></textarea>
+        @* Ошибка валидации для Description. *@
+        <span class="text-danger" asp-validation-for="Description"></span>
+    </div>
+    @* Блок поля «Дата». *@
+    <div class="mb-3">
+        @* Подпись: текст «Дата» берётся из [Display(Name = "Дата")] в Models/Note.cs. *@
+        <label class="form-label" asp-for="Date"></label>
+        @* type="date" - браузерный выбор даты; value="@Model.Date.ToString("yyyy-MM-dd")" - явно задаём формат, который понимает type=date (иначе поле было бы пустым). Значение уйдёт в obj.Date. *@
+        <input class="form-control" asp-for="Date" type="date" value="@Model.Date.ToString("yyyy-MM-dd")" />
+        @* Ошибка валидации для Date. *@
+        <span class="text-danger" asp-validation-for="Date"></span>
+    </div>
+    @* Блок выбора категорий (связь many-to-many). *@
+    <div class="mb-3">
+        @* Подпись группы чекбоксов (без asp-for: это не одно поле модели). *@
+        <label class="form-label">Категории</label>
+        @* Рамка вокруг списка. *@
+        <div class="border rounded p-2">
+            @* Если категорий в БД нет - подсказка. *@
+            @if (categories.Count == 0)
+            {
+                @* Серый текст-подсказка. *@
+                <span class="text-muted">Категорий пока нет — можно создать их на странице «Категории».</span>
+            }
+            @* Цикл: на каждую категорию из ViewBag.Categories рисуем чекбокс. *@
+            @foreach (var category in categories)
+            {
+                @* Обёртка чекбокса (Bootstrap form-check). *@
+                <div class="form-check">
+                    @* name="categoryIds" (одно имя у всех) -> браузер отправит все отмеченные value, а model binding соберёт их в int[] categoryIds метода Add (NoteController.cs:64). value - Id категории, id="cat_5" - для связи с <label for>. *@
+                    <input class="form-check-input" type="checkbox" name="categoryIds" value="@category.Id" id="cat_@category.Id" />
+                    @* Подпись чекбокса: название категории; for="cat_5" - клик по тексту ставит галочку. *@
+                    <label class="form-check-label" for="cat_@category.Id">@category.Title</label>
+                </div>
+            }
+        </div>
+    </div>
+    @* Кнопка отправки: браузер делает POST /Note/Add. При успехе контроллер показывает Stat.cshtml (NoteController.cs:95). *@
+    <button type="submit" class="btn btn-success">Сохранить</button>
+</form>

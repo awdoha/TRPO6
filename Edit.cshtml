@@ -1,0 +1,81 @@
+@* Форма редактирования заметки: GET /Note/Edit/5 (NoteController.cs:101) показывает форму, отправка - POST /Note/Edit (NoteController.cs:121). Открывается кнопкой «Изменить» из All.cshtml и Details.cshtml. *@
+@* @model Note - типизированное представление: Model - найденная заметка (NoteController.cs:113) или obj при ошибке валидации (NoteController.cs:131). *@
+@model Note
+@* Блок кода Razor. *@
+@{
+    @* Заголовок вкладки для _Layout.cshtml. *@
+    ViewData["Title"] = "Редактирование заметки";
+    @* Все категории для чекбоксов: ViewBag.Categories положен в NoteController.cs:109 (или :127). *@
+    var categories = ViewBag.Categories as List<Category> ?? [];
+    @* Id категорий, которые у заметки уже выбраны: ViewBag.SelectedCategoryIds из NoteController.cs:111 (или :129). Нужны, чтобы поставить галочки. *@
+    var selected = ViewBag.SelectedCategoryIds as List<int> ?? [];
+}
+
+@* Заголовок страницы. *@
+<h1>Редактирование заметки</h1>
+@* Ссылки «На главную» (/) и «К списку заметок» (/Note/All, NoteController.cs:34). *@
+<p><a asp-controller="Home" asp-action="Index">&larr; На главную</a> | <a asp-action="All">К списку заметок</a></p>
+
+@* Сводка ошибок валидации (ModelState): здесь появятся сообщения [Required]/[StringLength] из Models/Note.cs. *@
+<div asp-validation-summary="All" class="text-danger"></div>
+
+@* Форма: asp-action="Edit", method="post" -> POST /Note/Edit на NoteController.cs:121; antiforgery-токен вставляется автоматически, проверяется [ValidateAntiForgeryToken] (NoteController.cs:119). *@
+<form asp-action="Edit" method="post">
+    @* Скрытое поле с Id: asp-for="Id" даёт <input type="hidden" name="Id" value="5">. По нему UpdateNote в репозитории понимает, какую заметку менять. *@
+    <input type="hidden" asp-for="Id" />
+    @* Блок «Заголовок». *@
+    <div class="mb-3">
+        @* Подпись из свойства Title. *@
+        <label class="form-label" asp-for="Title"></label>
+        @* Поле заголовка: значение заполнено текущим Model.Title, после отправки попадёт в obj.Title. *@
+        <input class="form-control" asp-for="Title" />
+        @* Сообщение валидации для Title. *@
+        <span class="text-danger" asp-validation-for="Title"></span>
+    </div>
+    @* Блок «Описание». *@
+    <div class="mb-3">
+        @* Подпись из свойства Description. *@
+        <label class="form-label" asp-for="Description"></label>
+        @* Многострочное поле описания (значение - Model.Description). *@
+        <textarea class="form-control" asp-for="Description" rows="4"></textarea>
+        @* Сообщение валидации для Description. *@
+        <span class="text-danger" asp-validation-for="Description"></span>
+    </div>
+    @* Блок «Дата». *@
+    <div class="mb-3">
+        @* Подпись «Дата» (из [Display(Name="Дата")] в Models/Note.cs). *@
+        <label class="form-label" asp-for="Date"></label>
+        @* Поле даты; value в формате yyyy-MM-dd, иначе браузер не покажет дату в type="date". *@
+        <input class="form-control" asp-for="Date" type="date" value="@Model.Date.ToString("yyyy-MM-dd")" />
+        @* Сообщение валидации для Date. *@
+        <span class="text-danger" asp-validation-for="Date"></span>
+    </div>
+    @* Блок выбора категорий. *@
+    <div class="mb-3">
+        @* Подпись группы. *@
+        <label class="form-label">Категории</label>
+        @* Рамка вокруг списка. *@
+        <div class="border rounded p-2">
+            @* Если категорий нет - подсказка. *@
+            @if (categories.Count == 0)
+            {
+                @* Подсказка «Категорий пока нет». *@
+                <span class="text-muted">Категорий пока нет — можно создать их на странице «Категории».</span>
+            }
+            @* Цикл по всем категориям: один чекбокс на категорию. *@
+            @foreach (var category in categories)
+            {
+                @* Обёртка чекбокса. *@
+                <div class="form-check">
+                    @* name="categoryIds" - отмеченные Id соберутся в int[] categoryIds (NoteController.cs:121). checked="@selected.Contains(category.Id)": Razor выставит атрибут checked только когда выражение true, т.е. категория уже привязана к заметке. *@
+                    <input class="form-check-input" type="checkbox" name="categoryIds" value="@category.Id" id="cat_@category.Id"
+                           checked="@selected.Contains(category.Id)" />
+                    @* Подпись чекбокса (название категории). *@
+                    <label class="form-check-label" for="cat_@category.Id">@category.Title</label>
+                </div>
+            }
+        </div>
+    </div>
+    @* Кнопка отправки: POST /Note/Edit; при успехе - редирект на /Note/All (NoteController.cs:142). *@
+    <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+</form>

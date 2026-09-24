@@ -1,0 +1,24 @@
+@* Главная (стартовая) страница: адрес "/" -> HomeController.Index (HomeController.cs:16). Модели нет. *@
+@* Блок кода Razor. *@
+@{
+    @* Заголовок вкладки для _Layout.cshtml. *@
+    ViewData["Title"] = "Notes — главная";
+}
+
+@* Центрирование содержимого (Bootstrap). *@
+<div class="text-center">
+    @* Крупный заголовок. *@
+    <h1 class="display-4">Notes</h1>
+    @* Подзаголовок с описанием. *@
+    <p class="lead">Web-приложение для ведения заметок с категориями (практика №6, вариант В3.1).</p>
+
+    @* Колонка из трёх кнопок; style - зазор и выравнивание. *@
+    <div class="d-flex flex-column align-items-center gap-2 mt-4" style="gap:1rem;">
+        @* asp-controller="Note" asp-action="All" -> /Note/All: NoteController.cs:34, Views/Note/All.cshtml. *@
+        <a class="btn btn-primary btn-lg" style="min-width:260px;" asp-controller="Note" asp-action="All">Заметки</a>
+        @* /Category/All: CategoryController.cs:27, Views/Category/All.cshtml. *@
+        <a class="btn btn-secondary btn-lg" style="min-width:260px;" asp-controller="Category" asp-action="All">Категории</a>
+        @* /Note/Filter: NoteController.cs:205, Views/Note/Filter.cshtml. *@
+        <a class="btn btn-outline-primary btn-lg" style="min-width:260px;" asp-controller="Note" asp-action="Filter">Фильтрация заметок</a>
+    </div>
+</div>

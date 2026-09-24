@@ -1,0 +1,28 @@
+<!-- Файл проекта (MSBuild): описывает, как собирать Lab6. Используется: dotnet build / dotnet run, VS Code (C# Dev Kit). -->
+<!-- Sdk="Microsoft.NET.Sdk.Web" - SDK для веб-приложений ASP.NET Core (Kestrel, MVC, Razor-компиляция представлений). -->
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <!-- Общие свойства проекта. -->
+  <PropertyGroup>
+    <!-- Целевая платформа .NET 10 (сборка Lab6.dll запускается на среде .NET 10; в среде выполнения - CLR: IL компилируется JIT). -->
+    <TargetFramework>net10.0</TargetFramework>
+    <!-- Включает Nullable reference types: string? может быть null, string - нет (отсюда string.Empty в моделях и знак ? в Note?). -->
+    <Nullable>enable</Nullable>
+    <!-- ImplicitUsings: неявные using (System, System.Linq, System.Collections.Generic и др.), поэтому в файлах не нужно писать using System.Linq. -->
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <!-- Подключаемые NuGet-пакеты. -->
+  <ItemGroup>
+    <!-- EF Core Design: нужен только для команд dotnet ef (migrations add, database update); в готовое приложение не включается (PrivateAssets=all). -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.12">
+      <!-- Какие части пакета подключать. -->
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <!-- Не передавать пакет зависимым проектам. -->
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <!-- Провайдер SQLite для EF Core: даёт UseSqlite (Program.cs) и работу с файлом notes.db. Для SQL Server здесь был бы пакет Microsoft.EntityFrameworkCore.SqlServer. -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.12" />
+  </ItemGroup>
+
+</Project>

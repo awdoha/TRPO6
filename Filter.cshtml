@@ -1,0 +1,131 @@
+@* Страница фильтрации заметок: GET /Note/Filter?searchWords=..., действие NoteController.cs:205. Открывается кнопкой «Фильтрация» на главной, в меню и на All.cshtml. *@
+@* @model List<Note>: Model - найденные заметки, передал View(notes.ToList()) в NoteController.cs:235 (после OR-фильтра). *@
+@model List<Note>
+@* Блок кода Razor. *@
+@{
+    @* Заголовок вкладки. *@
+    ViewData["Title"] = "Фильтрация заметок";
+    @* Слова, по которым уже искали: ViewData["SearchWords"] положен в NoteController.cs:233 (очищенные слова). *@
+    var appliedWords = ViewData["SearchWords"] as List<string> ?? [];
+    @* Склеиваем слова в одну строку через запятую - для поля ввода и строки «Применённые фильтры». *@
+    string wordsText = string.Join(", ", appliedWords);
+}
+
+@* Заголовок страницы. *@
+<h1>Фильтрация заметок</h1>
+@* Ссылки: на главную (/) и к списку (/Note/All, NoteController.cs:34). *@
+<p><a asp-controller="Home" asp-action="Index">&larr; На главную</a> | <a asp-action="All">К списку заметок</a></p>
+
+@* Пояснение правила OR для пользователя (В3.1). *@
+<p class="text-muted">
+    Заметка попадает в результат, если хотя бы одно из введённых слов встречается
+    в заголовке ИЛИ в описании (регистр не учитывается).
+</p>
+
+@* Форма поиска. method="get" - параметры в адресной строке; asp-action="Filter" -> /Note/Filter (NoteController.cs:205); id="filterForm" - по нему находит форму скрипт внизу страницы. *@
+<form method="get" asp-action="Filter" id="filterForm" class="row g-2 align-items-center mb-3">
+    @* Колонка поля ввода. *@
+    <div class="col-auto flex-grow-1">
+        @* Подпись поля. *@
+        <label class="form-label">Слова для поиска (через запятую)</label>
+        @* Поле БЕЗ name: само оно не отправляется. Слова из него скрипт ниже превратит в скрытые поля name="searchWords". value - ранее введённые слова (wordsText), placeholder - подсказка. *@
+        <input type="text" id="wordsInput" class="form-control"
+               value="@wordsText" placeholder="например: работа, лекция" />
+    </div>
+    @* Колонка кнопки. *@
+    <div class="col-auto align-self-end">
+        @* Кнопка отправки: сначала сработает скрипт (submit-обработчик), потом GET /Note/Filter?searchWords=..&searchWords=.. *@
+        <button type="submit" class="btn btn-primary">Найти</button>
+    </div>
+</form>
+
+@* Если фильтр применён (слова есть)... *@
+@if (appliedWords.Count > 0)
+{
+    @* ...показываем «Применённые фильтры: слово1, слово2». *@
+    <p><strong>Применённые фильтры:</strong> @wordsText</p>
+}
+
+@* Таблица найденных заметок. *@
+<table class="table table-striped table-bordered align-middle">
+    @* Шапка. *@
+    <thead>
+        <tr>
+            @* Заголовки столбцов. *@
+            <th>Id</th>
+            <th>Заголовок</th>
+            <th>Описание</th>
+            <th>Дата</th>
+            <th>Категории</th>
+            <th>Действия</th>
+        </tr>
+    </thead>
+    @* Тело таблицы. *@
+    <tbody>
+@* Цикл по найденным заметкам (Model). *@
+@foreach (var note in Model)
+{
+        @* Строка таблицы. *@
+        <tr>
+            @* Id заметки. *@
+            <td>@note.Id</td>
+            @* Заголовок. *@
+            <td>@note.Title</td>
+            @* Описание: не длиннее 80 символов, иначе обрезка с многоточием. *@
+            <td>@(note.Description.Length > 80 ? note.Description[..80] + "…" : note.Description)</td>
+            @* Дата дд.мм.гггг. *@
+            <td>@note.Date.ToString("dd.MM.yyyy")</td>
+            @* Категории через запятую (загружены Include в EFNoteRepository.GetAllNotes). *@
+            <td>@string.Join(", ", note.Categories.Select(c => c.Title))</td>
+            @* Ячейка действий (здесь только просмотр). *@
+            <td class="text-nowrap">
+                @* /Note/Details/5 -> NoteController.cs:157. *@
+                <a class="btn btn-sm btn-info" asp-action="Details" asp-route-id="@note.Id">Просмотр</a>
+            </td>
+        </tr>
+@* Конец цикла. *@
+}
+    </tbody>
+</table>
+
+@* Если ничего не найдено... *@
+@if (Model.Count == 0)
+{
+    @* ...сообщение. *@
+    <p class="text-muted">Ничего не найдено.</p>
+}
+
+@* Секция Scripts: _Layout.cshtml выводит её в конце страницы через RenderSectionAsync("Scripts") (строка 54 макета), после подключения jQuery. *@
+@section Scripts {
+    @* Тег скрипта: код выполняется в браузере. *@
+    <script>
+        // Разбиваем текстовое поле "через запятую" на несколько searchWords перед отправкой формы,
+        // т.к. контроллер принимает List<string> searchWords через одноимённые query-параметры.
+        @* Находим форму по id и вешаем обработчик события submit (срабатывает при нажатии «Найти», до отправки). *@
+        document.getElementById('filterForm').addEventListener('submit', function (e) {
+            @* e.target - сама форма. *@
+            var form = e.target;
+            @* Удаляем ранее добавленные скрытые поля searchWords, чтобы слова не дублировались. *@
+            form.querySelectorAll('input[name="searchWords"]').forEach(function (el) { el.remove(); });
+
+            @* Берём введённую строку из поля. *@
+            var raw = document.getElementById('wordsInput').value;
+            @* split(',') режет по запятым; trim() убирает пробелы; filter оставляет непустые. Получается массив слов. *@
+            var words = raw.split(',').map(function (w) { return w.trim(); }).filter(function (w) { return w.length > 0; });
+
+            @* Для каждого слова создаём скрытое поле... *@
+            words.forEach(function (word) {
+                @* ...элемент input... *@
+                var hidden = document.createElement('input');
+                @* ...типа hidden (невидимое)... *@
+                hidden.type = 'hidden';
+                @* ...с именем searchWords: ASP.NET Core соберёт все поля с этим именем в List<string> searchWords (NoteController.cs:205)... *@
+                hidden.name = 'searchWords';
+                @* ...со значением - самим словом... *@
+                hidden.value = word;
+                @* ...и добавляем в форму, чтобы браузер отправил его вместе с запросом (?searchWords=работа&searchWords=лекция). *@
+                form.appendChild(hidden);
+            });
+        });
+    </script>
+}

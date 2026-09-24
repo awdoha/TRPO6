@@ -1,0 +1,9 @@
+@* Общие директивы для ВСЕХ представлений: их не надо повторять в каждом .cshtml. *@
+@* Подключаем пространство имён Lab6 (базовое). *@
+@using Lab6
+@* Подключаем Lab6.Models: поэтому в представлениях можно писать @model Note, @model List<Category> без полного имени. *@
+@using Lab6.Models
+@* Подключаем Rendering: класс SelectList для выпадающих списков сортировки (Note/All, Category/All). *@
+@using Microsoft.AspNetCore.Mvc.Rendering
+@* Включаем ВСЕ tag helpers из сборки MVC (asp-controller, asp-action, asp-for, asp-route-*, asp-validation-*, asp-items, asp-append-version). Без этой строки атрибуты asp-* остались бы обычным текстом. *@
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers

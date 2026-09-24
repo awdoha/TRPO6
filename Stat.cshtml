@@ -1,0 +1,69 @@
+@* Страница статистики заметок. Открывается: GET /Note/Stat (NoteController.cs:168) по кнопке «Статистика» в All.cshtml, и сразу после успешного добавления заметки (View("Stat") в NoteController.cs:95). Модели нет - данные берутся из ViewData. *@
+@* Блок кода Razor. *@
+@{
+    @* Заголовок вкладки. *@
+    ViewData["Title"] = "Статистика по заметкам";
+    @* Число заметок: ViewData["Count"] положил FillStat (NoteController.cs:272). "is int c ? c : 0" - если там int, взять его, иначе 0. *@
+    int count = ViewData["Count"] is int c ? c : 0;
+    @* Диапазон дат: массив из двух DateTime [самая ранняя, самая поздняя] - FillStat (NoteController.cs:274). *@
+    var dateRange = ViewData["Date"] as DateTime[] ?? [];
+    @* Уникальные заголовки: List<string> из FillStat (NoteController.cs:278). *@
+    var titles = ViewData["Titles"] as List<string> ?? [];
+}
+
+@* Заголовок страницы. *@
+<h1>Статистика по заметкам</h1>
+@* Ссылки: на главную (/) и в список (/Note/All, NoteController.cs:34). *@
+<p><a asp-controller="Home" asp-action="Index">&larr; На главную</a> | <a asp-action="All">К списку заметок</a></p>
+
+@* Список «параметр - значение». *@
+<dl class="row">
+    @* Название: количество заметок. *@
+    <dt class="col-sm-3">Всего заметок</dt>
+    @* Значение: число из ViewData["Count"]. *@
+    <dd class="col-sm-9">@count</dd>
+
+    @* Название: диапазон дат. *@
+    <dt class="col-sm-3">Диапазон дат</dt>
+    @* Значение. *@
+    <dd class="col-sm-9">
+        @* Показываем диапазон только если заметки есть и в массиве два элемента. *@
+        @if (count > 0 && dateRange.Length == 2)
+        {
+            @* Интерполяция строки: «дата1 — дата2» в формате dd.MM.yyyy. *@
+            @($"{dateRange[0]:dd.MM.yyyy} — {dateRange[1]:dd.MM.yyyy}")
+        }
+        else
+        {
+            @* Иначе - «нет данных». *@
+            <span class="text-muted">нет данных</span>
+        }
+    </dd>
+
+    @* Название: уникальные заголовки. *@
+    <dt class="col-sm-3">Уникальные заголовки</dt>
+    @* Значение. *@
+    <dd class="col-sm-9">
+        @* Если заголовков нет... *@
+        @if (titles.Count == 0)
+        {
+            @* ...«нет данных». *@
+            <span class="text-muted">нет данных</span>
+        }
+        else
+        {
+            @* Маркированный список. *@
+            <ul class="mb-0">
+                @* Цикл по уникальным заголовкам (уже отсортированным в контроллере). *@
+                @foreach (var title in titles)
+                {
+                    @* Один заголовок. *@
+                    <li>@title</li>
+                }
+            </ul>
+        }
+    </dd>
+</dl>
+
+@* Кнопка возврата: asp-action="All" -> /Note/All (NoteController.cs:34). *@
+<a class="btn btn-primary" asp-action="All">К списку заметок</a>

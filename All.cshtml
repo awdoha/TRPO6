@@ -1,0 +1,108 @@
+@* Представление заметок: /Note/All. Действие: NoteController.cs:34 (All). Открывается кнопкой «Заметки» на главной, ссылкой в меню и редиректом после Edit/Remove. *@
+@* [MVC: V = View] @model делает представление СТРОГО ТИПИЗИРОВАННЫМ: Model здесь - List<Note>, его передал View(notes.ToList()) в NoteController.cs:44. Note - из Models/Note.cs (@using в _ViewImports.cshtml). *@
+@model List<Note>
+@* Блок кода Razor: обычный C# внутри страницы, выполняется на сервере и в HTML не попадает. *@
+@{
+    @* ViewData["Title"] - заголовок вкладки: _Layout.cshtml подставит его в <title> (строка 6 макета). *@
+    ViewData["Title"] = "Заметки";
+    @* Читаем из ViewData выбранную сортировку; её положил NoteController.cs:40. "as string" - привести к строке, если ключа нет, будет null. *@
+    string? sort = ViewData["Sort"] as string;
+    @* Читаем n (NoteController.cs:42); "is int v ? v : 0" - если значение целое, взять его, иначе 0. *@
+    int n = ViewData["N"] is int v ? v : 0;
+    @* SelectList - список для <select>: значения "Id/Title/Description/Date" (это имена свойств Note, по ним работает SortAndLimit, NoteController.cs:240); второй аргумент sort - какой пункт выбран. *@
+    var sortItems = new SelectList(new[] { "Id", "Title", "Description", "Date" }, sort);
+}
+
+@* Заголовок страницы. *@
+<h1>Заметки</h1>
+@* Ссылка «На главную». Tag helper asp-controller="Home" asp-action="Index" при рендеринге превращается в href="/" (маршрут из Program.cs, MapControllerRoute). *@
+<p><a asp-controller="Home" asp-action="Index">&larr; На главную</a></p>
+
+@* Панель кнопок (Bootstrap: flex, отступы). *@
+<div class="mb-3 d-flex flex-wrap gap-2">
+    @* asp-action="Add" -> href="/Note/Add" (контроллер берётся текущий - Note). Вызывает NoteController.cs:50 (Add GET) и открывает форму Add.cshtml. *@
+    <a class="btn btn-success" asp-action="Add">Добавить заметку</a>
+    @* asp-action="Stat" -> /Note/Stat: NoteController.cs:168, страница Stat.cshtml со сводкой. *@
+    <a class="btn btn-outline-secondary" asp-action="Stat">Статистика</a>
+    @* asp-action="Filter" -> /Note/Filter: NoteController.cs:205, страница Filter.cshtml. *@
+    <a class="btn btn-outline-secondary" asp-action="Filter">Фильтрация</a>
+    @* asp-route-n="@n" и asp-route-sort="@sort" добавляют в адрес параметры: /Note/Export?n=2&sort=Title. Так выгружается тот же набор, что виден на экране. Вызывает NoteController.cs:178 (Export) - браузер скачает notes.json. *@
+    <a class="btn btn-outline-dark" asp-action="Export" asp-route-n="@n" asp-route-sort="@sort">Экспорт в JSON</a>
+</div>
+
+@* Форма сортировки/ограничения. method="get": данные уходят в адресную строку (?sort=Title&n=2), а не в тело запроса. asp-action="All" - отправка на /Note/All, т.е. на тот же NoteController.cs:34 (параметры sort и n подхватит model binding). *@
+<form method="get" asp-action="All" class="row row-cols-lg-auto g-2 align-items-center mb-3">
+    @* Колонка Bootstrap для выпадающего списка. *@
+    <div class="col-12">
+        @* Подпись к списку. *@
+        <label class="form-label me-1">Сортировка:</label>
+        @* name="sort" - имя параметра запроса (совпадает с параметром sort метода All). asp-items="sortItems" - tag helper строит <option> из SelectList, объявленного выше. *@
+        <select name="sort" class="form-select" asp-items="sortItems"></select>
+    </div>
+    @* Колонка для поля количества. *@
+    <div class="col-12">
+        @* Подпись поля. *@
+        <label class="form-label me-1">Показать (0 — все):</label>
+        @* name="n" - параметр n метода All; value="@n" - подставить текущее значение из ViewData; min="0" - нельзя отрицательное. *@
+        <input type="number" name="n" value="@n" min="0" class="form-control" />
+    </div>
+    @* Колонка для кнопки. *@
+    <div class="col-12">
+        @* Кнопка отправки формы: браузер выполнит GET /Note/All?sort=...&n=... *@
+        <button type="submit" class="btn btn-primary">Применить</button>
+    </div>
+</form>
+
+@* Таблица списка заметок (Bootstrap: полосатая, с рамками). *@
+<table class="table table-striped table-bordered align-middle">
+    @* Шапка таблицы. *@
+    <thead>
+        <tr>
+            @* Заголовки столбцов: соответствуют свойствам Note. *@
+            <th>Id</th>
+            <th>Заголовок</th>
+            <th>Описание</th>
+            <th>Дата</th>
+            <th>Категории</th>
+            <th>Действия</th>
+        </tr>
+    </thead>
+    @* Тело таблицы: сюда цикл выводит по строке на заметку. *@
+    <tbody>
+@* Цикл Razor: перебираем Model (List<Note>, из NoteController.cs:44) - по одной строке <tr> на каждую заметку. *@
+@foreach (var note in Model)
+{
+        @* Строка таблицы для текущей заметки. *@
+        <tr>
+            @* @note.Id - вывести значение свойства (HTML-кодируется автоматически). Id взят из БД через EFNoteRepository.GetAllNotes. *@
+            <td>@note.Id</td>
+            @* Заголовок заметки. *@
+            <td>@note.Title</td>
+            @* Если описание длиннее 80 символов, показываем первые 80 (note.Description[..80] - срез строки) и многоточие; иначе всё описание. *@
+            <td>@(note.Description.Length > 80 ? note.Description[..80] + "…" : note.Description)</td>
+            @* Дата в формате день.месяц.год. *@
+            <td>@note.Date.ToString("dd.MM.yyyy")</td>
+            @* Названия категорий через запятую. note.Categories заполнено благодаря Include(n => n.Categories) в EFNoteRepository.GetAllNotes; без Include здесь было бы пусто. *@
+            <td>@string.Join(", ", note.Categories.Select(c => c.Title))</td>
+            @* Ячейка кнопок действий (text-nowrap - без переноса строк). *@
+            <td class="text-nowrap">
+                @* asp-route-id="@note.Id" -> /Note/Details/5: NoteController.cs:157 (Details), страница Details.cshtml. *@
+                <a class="btn btn-sm btn-info" asp-action="Details" asp-route-id="@note.Id">Просмотр</a>
+                @* /Note/Edit/5: NoteController.cs:101 (Edit GET), форма Edit.cshtml. *@
+                <a class="btn btn-sm btn-warning" asp-action="Edit" asp-route-id="@note.Id">Изменить</a>
+                @* /Note/Remove/5: NoteController.cs:146 (Remove); onclick="return confirm(...)" - браузер спрашивает подтверждение, при «Отмена» переход не выполняется. После удаления редирект обратно на All. *@
+                <a class="btn btn-sm btn-danger" asp-action="Remove" asp-route-id="@note.Id"
+                   onclick="return confirm('Удалить заметку «@note.Title»?');">Удалить</a>
+            </td>
+        </tr>
+@* Конец цикла foreach. *@
+}
+    </tbody>
+</table>
+
+@* Если список пуст (Count == 0), показываем сообщение. *@
+@if (Model.Count == 0)
+{
+    @* Серый текст-подсказка «Заметок нет». *@
+    <p class="text-muted">Заметок нет.</p>
+}
